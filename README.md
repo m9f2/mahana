@@ -2,11 +2,14 @@
 
 # 🌸 تطبيق ماهنا (Mahana App) 🌸
 
-<img width="180" height="180" alt="شعار تطبيق ماهنا" src="1000149013.png" style="border-radius: 50%;" />
+<img width="512" height="512" alt="1000149013" src="https://github.com/user-attachments/assets/894e825c-4750-4159-b65d-727333176c03" />
+
 
 > *تطبيق وموقع ويب متطور، خفيف الوزن، ومخصص لمتابعة وتوثيق مراحل الحمل بشكل تفاعلي وذكي.*
 
-[🌐 **استعرض الموقع مباشرة**](https://m9f2.github.io/mahana/) | [📱 **تحميل تطبيق الـ APK**](https://github.com/m9f2/mahana/releases)
+[🌐 **استعرض الموقع مباشرة**](https://m9f2.github.io/mahana/) 
+
+[📱 **تحميل تطبيق الـ APK**](https://github.com/m9f2/mahana/releases)
 
 ---
 
