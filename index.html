@@ -31,7 +31,7 @@
 <div id="sh"></div>
 <script>
 const $=s=>document.querySelector(s);
-const GEMINI_KEY = "AQ.Ab8RN6LafthKvzo8AYuDDmYhi3qdeeGIVTkhnVW859ILLETgyg";
+const GROQ_KEY = "Gsk_6CeW3kF31seVoIyAcVYNWGdyb3FYYGoi9n3Mo4cqOXxbe70tIqTz";
 const ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'],pn=i=>i<10?'الحمل '+ORD[i]:'الحمل رقم '+(i+1);
 function mkS(r){const o={ps:r.ps&&r.ps.length?r.ps:[{lmp:'',visits:r.visits||[]}],cur:r.cur||0};o.ps.forEach(p=>{p.visits=p.visits||[]});if(o.cur>=o.ps.length)o.cur=0;
 Object.defineProperty(o,'lmp',{get:()=>o.ps[o.cur].lmp,set:v=>{o.ps[o.cur].lmp=v}});Object.defineProperty(o,'visits',{get:()=>o.ps[o.cur].visits,set:v=>{o.ps[o.cur].visits=v}});return o}
@@ -97,13 +97,12 @@ async function att(ids){let h='';for(const id of ids){const m=await mget(id);if(
 function sV(){if(!_V.date){alert('اختاري تاريخ الزيارة');return}const w=wkOf(_V.date);_V.week=w!==''&&w>=0?w:'';const i=S.visits.findIndex(x=>x.id===_V.id);i<0?S.visits.push(_V):S.visits[i]=_V;save();closeSh();draw()}
 
 let CH=[],busy=0;
-
-const RULES='أنتِ مساعدة ذكية متخصصة في الحمل ومتابعة سجلات الحامل (الزيارات، الأطباء، الأدوية، التحاليل والسونار). أجيبي بدقة بناءً على بياناتها الشخصية أدناه.';
+const RULES='أنتِ «مساعدة ماهانة»، مساعدة ذكية ناطقة بالعربية متخصصة في شؤون الحمل. تجيبين الحامل بناءً على بياناتها الفعلية المزودة أدناه (الزيارات، الأطباء، الأدوية، التحاليل والسونار). أجيبي بدقة وعناية وبصيغة المؤنث.';
 function ctxTxt(){const p=pregInfo(),w=Math.min(Math.max(p.w,1),40),V=S.visits;
-let t=`بيانات الحامل: أسبوع الحمل ${p.w}، الزيارات: ${V.length}\n`;
-V.forEach((v,k)=>{t+=`زيارة ${k+1}: التاريخ ${v.date}، الطبيب: ${v.doctor||'—'}، الملاحظات: ${v.notes||'—'}\n`});return t}
+let t=`بيانات الحامل: أسبوع الحمل ${p.w}، عدد الزيارات: ${V.length}\n`;
+V.forEach((v,k)=>{t+=`زيارة ${k+1}: التاريخ ${v.date}، الطبيب: ${v.doctor||'—'}، ملاحظات: ${v.notes||'—'}\n`});return t}
 
-// ربط حقيقي مباشر مع Google Gemini 1.5 Flash API
+// الاتصال المباشر الحقيقي بـ Groq API (Llama 3.3) مع دعم كامل لمتصفحات الويب
 async function ask(q){
     const inp=$('#cq');
     q=(q||(inp?inp.value:'')).trim();
@@ -112,34 +111,40 @@ async function ask(q){
     busy=1;
     CH.push({role:'user',content:q});
     const box=$('#ch');
-    box.innerHTML=chHTML()+`<div id='cb' class='mu'>جاري الاتصال بـ Gemini…</div>`;
+    box.innerHTML=chHTML()+`<div id='cb' class='mu'>جاري استشارة الذكاء الاصطناعي (Groq Llama)…</div>`;
     box.scrollTop=box.scrollHeight;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Authorization": "Bearer " + GROQ_KEY,
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: RULES + "\n\n" + ctxTxt() + "\n\nسؤال المستخدم: " + q }]
-                }]
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {role: "system", content: RULES + "\n\n" + ctxTxt()},
+                    ...CH.slice(-6).map(m => ({role: m.role, content: m.content}))
+                ],
+                temperature: 0.7
             })
         });
 
         const data = await response.json();
-        if(data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-            const replyText = data.candidates[0].content.parts[0].text;
-            CH.push({role: 'model', content: replyText});
+        if(data.choices && data.choices[0] && data.choices[0].message) {
+            const replyText = data.choices[0].message.content;
+            CH.push({role: 'assistant', content: replyText});
             box.innerHTML = chHTML();
         } else {
-            throw new Error(data.error?.message || 'خطأ في استجابة الخادم');
+            throw new Error(data.error?.message || 'استجابة غير صالحة');
         }
     } catch(e) {
         CH.pop();
         const b=$('#cb');
         if(b){
             b.className='mu';
-            b.textContent='تعذر الاتصال المباشر بسبب حماية المتصفح (CORS). يرجى استخدام المساعد المحلي أو إعداد وسيط.';
+            b.textContent='تعذّر الاتصال بالمساعد الذكي، تأكد من اتصال الإنترنت.';
         }
     }
     busy=0;
@@ -147,7 +152,7 @@ async function ask(q){
 
 function chHTML(){return CH.map(m=>`<div style='margin:6px 0'><div style='display:inline-block;max-width:94%;padding:8px 12px;border-radius:14px;background:${m.role==='user'?'var(--mar)':'var(--bg)'};border:1px solid var(--ln);white-space:pre-wrap;line-height:1.8'>${esc(m.content)}</div></div>`).join('')}
 
-const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية (Gemini AI)</h2><div class='mu'>اسأليها عن حملك وزياراتك مباشرة.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي هذا الأسبوع؟','لخّصي لي زياراتي'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div></div>`;
+const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية (Groq AI)</h2><div class='mu'>اسأليها عن حملك، أعراضك، أطبائك، وزياراتك؛ مرتبطة مباشرة بسجلك.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي الطبيعية هذا الأسبوع؟','لخّصي لي زياراتي وسوناراتي','ماذا أتوقع في هذا الشهر؟'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div></div>`;
 function dayChk(){const n=ymd(today());if(n!==_day){_day=n;if(!document.querySelector('.sheet')&&!document.getElementById('pv')&&!busy)draw()}}
 let _day=ymd(today());setInterval(dayChk,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dayChk()});
 function sett(){const p=pregInfo();return `<h1>⚙️ الإعدادات</h1><div class='card'><h2>آخر يوم لآخر دورة</h2><input type='date' value='${S.lmp}' onchange='S.lmp=this.value;save();draw()'><div class='mu' style='margin-top:6px'>الولادة المتوقعة: ${D(p.due)}</div></div>`}
