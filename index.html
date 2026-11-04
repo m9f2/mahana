@@ -45,33 +45,26 @@ const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth()
 const MN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const D=d=>d?d.getDate()+' '+MN[d.getMonth()]+' '+d.getFullYear():'لم يحدد بعد';
 
-const TR=[{n:'الثلث الأول (1–13)',tips:['أكثري من السوائل وتناولي وجبات صغيرة متكررة لتخفيف الغثيان.','تجنبي الكحول والتدخين واللحوم النيئة والأجبان غير المبسترة.','الراحة الكافية، وتجنبي الإفراط في الكافيين (أقل من 200 ملغ يومياً).'],meds:['حمض الفوليك (400–800 ميكروغرام يومياً عادةً) لتقليل عيوب الأنبوب العصبي.','فيتامينات ما قبل الولادة حسب توصية الطبيب.','فيتامين B6 قد يخفف الغثيان بإشراف الطبيب.'],warn:['نزيف مهبلي أو ألم شديد بالبطن','قيء مستمر لا تستطيعين معه شرب السوائل','حرارة مرتفعة']},{n:'الثلث الثاني (14–27)',tips:['ممارسة المشي أو السباحة الخفيفة بانتظام.','نامي على جانبك الأيسر وبوسائد تدعم البطن.','زيدي الأطعمة الغنية بالحديد والكالسيوم والبروتين.'],meds:['مكمل الحديد إذا ظهر نقص في فحص الدم.','الكالسيوم وفيتامين د حسب التحليل.','الباراسيتامول عادةً آمن بالجرعات الموصى بها؛ تجنبي الإيبوبروفين والأسبرين إلا بوصفة طبيب.'],warn:['صداع شديد مع تشوش الرؤية أو تورم مفاجئ بالوجه','نزول سوائل أو انقباضات منتظمة مبكرة','قلة حركة الجنين الملحوظة']},{n:'الثلث الثالث (28–40)',tips:['عدّي حركات الجنين يومياً (10 حركات خلال ساعتين).','جهزي حقيبة الولادة وخطة الوصول للمستشفى.','تمارين التنفس والاسترخاء، ورفع القدمين عند التورم.'],meds:['استمرار الحديد والكالسيوم حسب نتائج التحاليل.','قد يُعطى مضاد حيوي أثناء الولادة إذا كان فحص GBS إيجابياً.','لا تتناولي أي دواء جديد دون استشارة الطبيب.'],warn:['انخفاض أو توقف حركة الجنين','نزيف أو نزول ماء','ألم أعلى البطن وارتفاع الضغط']}];
+const TR=[{n:'الثلث الأول (1–13)',tips:['أكثري من السوائل وتناولي وجبات صغيرة متكررة لتخفيف الغثيان.'],meds:['حمض الفوليك (400–800 ميكروغرام يومياً عادةً).'],warn:['نزيف مهبلي أو ألم شديد بالبطن']},{n:'الثلث الثاني (14–27)',tips:['ممارسة المشي أو السباحة الخفيفة.'],meds:['مكمل الحديد إذا ظهر نقص في فحص الدم.'],warn:['صداع شديد مع تشوش الرؤية']},{n:'الثلث الثالث (28–40)',tips:['عدّي حركات الجنين يومياً.'],meds:['استمرار الحديد والكالسيوم.'],warn:['انخفاض أو توقف حركة الجنين']}];
 const trOf=w=>w<14?0:w<28?1:2;
-const VIS=[[6,'أول زيارة وتأكيد الحمل (فحص دم وبول وسونار)'],[12,'فحص الشفافية القفوية'],[16,'فحص الرباعي (الكوادرابل) وقياس الضغط'],[20,'سونار التشريح (فحص العيوب الخَلقية)'],[24,'فحص سكر الحمل (الجلوكوز)'],[28,'عامل Rh ومضاد D إن لزم، وتحليل فقر الدم'],[32,'سونار متابعة النمو'],[36,'مسحة GBS وتحديد وضع الجنين'],[38,'فحص أسبوعي'],[40,'موعد الولادة']];
 
 function pregInfo(){
-    if(!S.lmp){
-        return {days:0,w:0,d:0,due:null,left:280,unset:true};
-    }
+    if(!S.lmp){return {days:0,w:0,d:0,due:null,left:280,unset:true};}
     const lmpDate = pd(S.lmp);
-    if(!lmpDate || isNaN(lmpDate.getTime())){
-        return {days:0,w:0,d:0,due:null,left:280,unset:true};
-    }
+    if(!lmpDate || isNaN(lmpDate.getTime())){return {days:0,w:0,d:0,due:null,left:280,unset:true};}
     const diff = today() - lmpDate;
     const dd = Math.max(0, Math.floor(diff / 864e5));
     return {days:dd, w:Math.floor(dd/7), d:dd%7, due:add(lmpDate, 280), left:Math.max(0, 280-dd), unset:false};
 }
 
-const BD=[[8,'يبدأ القلب بالنبض نحو الأسبوع 6، وتتكوّن معظم الأعضاء الأساسية بحلول الأسبوع 8، وهي الفترة الأكثر حساسية للأدوية والعوامل الضارة.',['غثيان وقيء صباحي','إرهاق ونعاس شديد','كثرة التبول وحساسية الثدي'],['تناولي حمض الفوليك يومياً (400 ميكروغرام على الأقل).','تجنّبي الكحول والتدخين وأي دواء دون استشارة الطبيب.','احجزي أول زيارة وسونار لتأكيد الحمل وموعد الولادة.']],
-[13,'بنهاية الأسبوع 12 تقريباً تكتمل الأعضاء الأساسية، وتبدأ الكلى بإنتاج البول، ويستطيع الجنين فتح قبضته وإغلاقها.',['غثيان يخف تدريجياً','تقلبات مزاجية','إمساك وانتفاخ'],['وجبات صغيرة متكررة وسوائل كافية.','أجري فحص الشفافية القفوية بين الأسبوع 11 و14.','تجنّبي اللحوم والبيض النيئة والأجبان غير المبسترة.']],
-[19,'يبدأ الجنين بالبلع وتتكوّن بصمات الأصابع، وتشعر الأم عادةً بأولى الحركات بين الأسبوع 16 و25.',['عودة الطاقة وتحسّن الغثيان','احتقان الأنف ونزيف اللثة الخفيف','ألم خفيف في جانبي أسفل البطن'],['خذي الحديد والكالسيوم حسب نتائج التحاليل.','مارسي نشاطاً معتدلاً (نحو 150 دقيقة أسبوعياً) إن لم يمنعك الطبيب.','أجري فحص الدم الرباعي في الموعد الذي يحدده الطبيب.']],
-[27,'يبدأ الجنين بسماع الأصوات وتتكوّن الحويصلات الهوائية في رئتيه، ويصبح البقاء ممكناً طبياً بالرعاية المركزة من نحو الأسبوع 22–24.',['ألم الظهر','حرقة المعدة','تشنجات الساقين'],['أجري سونار التشريح بين الأسبوع 18 و22.','أجري فحص سكر الحمل بين الأسبوع 24 و28.','نامي على جانبك ولاحظي حركة الجنين.']],
-[35,'تنمو الرئتان وينتج الجنين مادة السرفاكتانت التي تساعده على التنفس بعد الولادة، ويزيد وزنه بنحو 200 غ أسبوعياً.',['ضيق النفس','تورم خفيف في القدمين','أرق وانقباضات براكستون هيكس'],['عدّي حركات الجنين يومياً.','خذي لقاح Tdap بين الأسبوع 27 و36 بعد استشارة الطبيب.','راجعي الطبيب فوراً عند صداع شديد أو تورم مفاجئ في الوجه.']],
-[40,'من الأسبوع 37 يُعدّ الحمل مكتمل المدة، وفي الغالب ينزل رأس الجنين نحو الحوض استعداداً للولادة.',['ثقل الحوض وكثرة التبول','انقباضات براكستون هيكس','ألم الظهر وزيادة الإفرازات'],['أجري مسحة GBS بين الأسبوع 36 و37.','جهّزي حقيبة الولادة وخطة الوصول للمستشفى.','اذهبي للمستشفى عند انتظام الانقباضات أو نزول الماء أو النزيف.']]];
-const FS=['🗓️|مرحلة الطمث وتجهيز الرحم|0|0','🥚|مرحلة الإباضة والتخصيب|0|0','🌱|مرحلة الانغراس وتكوين الخلايا|0.01|0','🍏|بذرة تفاح|0.1|0','🫘|حبة حمص|0.3|0','🫘|حبة فاصوليا صغيرة|0.6|0','🫐|توت أزرق|1|0','🍇|حبة عنب|1.6|1','🫒|حبة زيتون|2.3|2','🍓|حبة فراولة|3.1|4','🍈|تين|4.2|7','🍋|ليمونة صغيرة|5.4|14','🍑|خوخة صغيرة|7|23','🍋|ليمون أصفر|8.7|43','🍏|تفاحة صغيرة|10|70','🥑|أفوكادو|11.6|100','🧅|بصلة صغيرة|13|140','🥔|بطاطس متوسطة|14.2|190','🥭|مانجو|20|240','🍌|موزة|25.6|300','🥕|جزرة كبيرة|27|360','🥒|خيار|28|430','🥭|مانجو كبيرة|29|500','🌽|كوز ذرة|30|600','🥦|رأس بروكلي متوسط|34|660','🥬|رأس خس صغير|35.6|760','🥦|رأس قرنبيط|36.6|875','🍆|باذنجان|37.6|1000','🫑|فلفل رومي كبير|38.6|1150','🥬|ملفوف صغير|39.9|1300','🥥|ثمرة جوز الهند|41|1500','🍈|شمام كانتالوب|42.4|1700','🍍|ثمرة أناناس|43.7|2000','🍈|شمام كبير|45|2150','🎃|قرع صغير|46.2|2380','🥬|خس روماني كبير|47.4|2600','🥬|رأس ملفوف كامل|48.6|2850','🎃|قرع عسلي صغير|49.8|3100','🍉|بطيخة صغيرة|50.5|3250','🍉|بطيخة ناضجة|51|3400'];
+const BD=[[8,'بداية تكوين الأعضاء الأساسية.',['غثيان وقيء صباحي'],['تناولي حمض الفوليك']],
+[13,'تكتمل الأعضاء الأساسية.',['غثيان يخف تدريجياً'],['وجبات صغيرة متكررة']],
+[19,'يبدأ الجنين بالبلع.',['عودة الطاقة وتحسّن الغثيان'],['خذي الحديد']],
+[27,'يبدأ الجنين بسماع الأصوات.',['ألم الظهر وحرقة المعدة'],['أجري سونار التشريح']],
+[35,'تنمو الرئتان.',['ضيق النفس وتورم خفيف'],['عدّي حركات الجنين']],
+[40,'الحمل مكتمل المدة.',['ثقل الحوض'],['جهّزي حقيبة الولادة']]];
+const FS=['🗓️|مرحلة الطمث|0|0','🥚|مرحلة الإباضة|0|0','🌱|مرحلة الانغراس|0.01|0','🍏|بذرة تفاح|0.1|0','🫘|حبة حمص|0.3|0','🫘|حبة فاصوليا|0.6|0','🫐|توت أزرق|1|0','🍇|حبة عنب|1.6|1','🫒|حبة زيتون|2.3|2','🍓|حبة فراولة|3.1|4','🍈|تين|4.2|7','🍋|ليمونة صغيرة|5.4|14','🍑|خوخة صغيرة|7|23','🍋|ليمون أصفر|8.7|43','🍏|تفاحة صغيرة|10|70','🥑|أفوكادو|11.6|100','🧅|بصلة صغيرة|13|140','🥔|بطاطس متوسطة|14.2|190','🥭|مانجو|20|240','🍌|موزة|25.6|300','🥕|جزرة كبيرة|27|360','🥒|خيار|28|430','🥭|مانجو كبيرة|29|500','🌽|كوز ذرة|30|600','🥦|رأس بروكلي|34|660','🥬|رأس خس صغير|35.6|760','🥦|رأس قرنبيط|36.6|875','🍆|باذنجان|37.6|1000','🫑|فلفل رومي|38.6|1150','🥬|ملفوف صغير|39.9|1300','🥥|جوز الهند|41|1500','🍈|شمام كانتالوب|42.4|1700','🍍|أناناس|43.7|2000','🍈|شمام كبير|45|2150','🎃|قرع صغير|46.2|2380','🥬|خس كبير|47.4|2600','🥬|ملفوف كامل|48.6|2850','🎃|قرع عسلي|49.8|3100','🍉|بطيخة صغيرة|50.5|3250','🍉|بطيخة ناضجة|51|3400'];
 const FR=FS.map(s=>{const a=s.split('|');return[a[0],a[1],+a[2],+a[3]]}),EM=FR.map(x=>x[0]);
-const FACT=['بداية الدورة: يبدأ الحيض وتتجدد بطانة الرحم، ويُحسب عمر الحمل من أول يوم لآخر دورة، فلا يوجد حمل فعلي بعد.','تنضج بويضة داخل المبيض وتحدث الإباضة غالباً نحو اليوم 14، وتبقى البويضة قابلة للإخصاب 12–24 ساعة فقط.','ينقسم البويض المخصّب بسرعة ويصل الرحم على شكل كيسة أريمية ثم يبدأ الانغراس في بطانة الرحم.','ينغرس الجنين في بطانة الرحم ويبدأ هرمون الحمل hCG بالظهور في الدم والبول وتتكوّن المشيمة الأولى.','يبدأ الأنبوب العصبي بالتكوّن وهو أصل الدماغ والحبل الشوكي، ويتكوّن قلب بدائي على شكل أنبوب.','يبدأ القلب بالنبض بإيقاع منتظم ويمكن رؤيته بالسونار، وتظهر براعم الذراعين والساقين.','تتشكل ملامح الوجه الأولى (العينان والأنف) وينقسم الدماغ إلى مناطقه الرئيسية.','تتكوّن الأصابع وتبدأ حركات عفوية صغيرة، ويصل نبض القلب إلى نحو 150–170 نبضة في الدقيقة.','تتضح الجفون والأذنان وتنمو العضلات، وتبدأ الغضاريف بالتحول تدريجياً إلى عظام.','تنتهي مرحلة تكوّن الأعضاء الأساسية ويدخل الجنين مرحلة النمو، وتختفي الأغشية بين الأصابع.','يبدأ الجنين بتحريك أطرافه بنشاط، وتتكوّن الأظافر وتتمايز الأعضاء التناسلية الخارجية.','تعمل الكلى وتنتج البول، ويستجيب الجنين للمس، ويُجرى فحص الشفافية القفوية بين الأسبوع 11 و14.','تتكوّن بصمات الأصابع وتنمو الأحبال الصوتية، ويقترب نهاية الثلث الأول.','يبدأ الجنين بتعابير الوجه، ويغطي جلده شعر ناعم (اللانوغو)، وينشط جهازه الهضمي.','تقوى العظام وتتكوّن براعم التذوق، ويستطيع الجنين البلع والتحرك بحرية في السائل الأمنيوسي.','يكبر الهيكل العظمي وتتحسن حركات الجنين، وقد تشعر الأم بأولى الحركات خاصة إن سبق لها الحمل.','تتكوّن الدهون البنية التي تساعده على التدفئة بعد الولادة، وتنمو المشيمة بسرعة.','تتطور عظام الأذن الوسطى ويبدأ السمع، وتُغلَّف الأعصاب بغمد الميالين.','يغطي جلده طبقة دهنية واقية تسمى الفيرنكس تحميه من السائل الأمنيوسي.','منتصف الحمل: يُجرى سونار التشريح بين الأسبوع 18 و22 لفحص نمو الأعضاء.','تنشط حركات الجنين ويبدأ نخاع العظم بالمشاركة في إنتاج خلايا الدم.','تتكوّن الحواجب والرموش وتتطور حاسة اللمس، وقد يمسك الحبل السري بيديه.','يتفاعل مع الأصوات العالية ويتحرك استجابة لها، وتنمو الأوعية الدموية في رئتيه.','تتشكل الحويصلات الهوائية في الرئتين ويبدأ إنتاج السرفاكتانت؛ ويُجرى فحص سكر الحمل بين 24 و28.','تتحسن استجابة الجنين للصوت واللمس وتنضج الأوعية الدموية في الرئتين.','تنفتح الجفون ويستجيب الجنين للضوء الساطع.','يزداد نشاط الدماغ وتظهر تلافيفه، وتنتظم دورات النوم واليقظة، وينتهي الثلث الثاني تقريباً.','يبدأ الثلث الثالث: يتراكم الدهن تحت الجلد ويرمش الجنين، ويُفحص عامل Rh عند الحاجة.','تقوى عظامه ويحتاج لكميات أكبر من الكالسيوم والحديد من الأم.','يزداد حجم الدماغ ويتحسن تحكمه بحرارة جسمه.','تنضج الوصلات العصبية وتبدأ المشيمة بنقل كميات أكبر من الأجسام المضادة من الأم.','تتدرب الرئتان على التنفس ويتخذ الجنين غالباً وضعية الرأس للأسفل.','تستمر المناعة بالنمو عبر الأجسام المضادة المنقولة من الأم، ويزداد وزنه بسرعة.','يصل السائل الأمنيوسي إلى أعلى مستوى تقريباً وتنضج الرئتان تدريجياً.','تنضج الكلى وتقل مساحة الحركة لكن الحركات لا تتوقف؛ استمري بعدّها يومياً.','ينزل رأس الجنين غالباً نحو الحوض، ويُجرى مسحة GBS بين الأسبوع 36 و37.','يُعدّ الحمل مكتمل المدة مبكراً من هذا الأسبوع، وتتجمع مادة العقي في أمعائه.','يزداد الدهن الواقي ويتساقط جزء من اللانوغو، وتستمر الرئتان بالنضج.','يُسمّى الحمل مكتمل المدة بين الأسبوع 39 و40، والجنين جاهز للولادة.','موعد الولادة المتوقع؛ نسبة قليلة (نحو 4–5%) تلد في الموعد بالضبط وأغلب الولادات بين 37 و42.'];
-const DET=[[3,'يُحسب عمر الحمل من أول يوم لآخر دورة، لذلك يمر الأسبوعان الأولان قبل الإخصاب فعلياً. تنضج البويضة وتُطلق عند الإباضة وتبقى قابلة للإخصاب نحو 12–24 ساعة، بينما تعيش الحيوانات المنوية حتى 5 أيام. بعد الإخصاب تنقسم الخلايا بسرعة مكوّنة كرة خلايا تصل الرحم خلال نحو 5 أيام.'],[5,'تتمايز الخلايا إلى ثلاث طبقات: الخارجية (الجلد والجهاز العصبي)، والوسطى (القلب والعضلات والعظام والكلى)، والداخلية (الأمعاء والكبد والرئتان). تبدأ الصفيحة العصبية بالانطواء لتكوّن الأنبوب العصبي، ويتكوّن أنبوب قلبي بسيط، وتتكوّن المشيمة ويفرز الجسم هرمون hCG.'],[7,'ينبض القلب بإيقاع منتظم ثم ينقسم إلى حجرات، ويتضح انقسام الدماغ إلى مناطق رئيسية. تظهر براعم العينين والأذنين والأنف، وتتكوّن براعم الأطراف. يكتمل غلق الأنبوب العصبي تقريباً في هذه الفترة، ولهذا يُوصى بحمض الفوليك قبل الحمل وفي بدايته.'],[9,'تتكوّن الأصابع وتنفصل تدريجياً، وتنمو الجفون والأذنان، ويبدأ الجنين بحركات عفوية صغيرة لا تشعر بها الأم. يرتفع نبض القلب إلى نحو 150–170 نبضة في الدقيقة ثم يهدأ لاحقاً. تتشكل الكلى والكبد والأمعاء الأساسية وتبدأ العظام بالتكلس.'],[12,'تنتهي فترة تكوّن الأعضاء الأساسية وتبدأ مرحلة النمو. تتطور الأعصاب والعضلات فتظهر ردود فعل كقبض اليد، وتبدأ الكلى بإنتاج البول. تظهر براعم الأسنان اللبنية داخل الفكين، وتبدأ الأعضاء التناسلية الخارجية بالتمايز، وتتكوّن خلايا الدم في الكبد.'],[15,'ينمو الدماغ بسرعة وتتشكل الوصلات العصبية الأولى. يبدأ الجنين بالبلع والتحرك بنشاط، وتتكوّن براعم التذوق. تغطي الجلد شعيرات ناعمة (اللانوغو)، وتتشكل بصمات الأصابع، وتزداد قوة العظام.'],[18,'يتحسن تنسيق الحركات وقد تشعر الأم بالركلات الخفيفة. تتطور العظام الصغيرة في الأذن الوسطى فيبدأ السمع، وتتكوّن الدهون البنية التي تساعده على التدفئة بعد الولادة، ويبدأ غمد الميالين بتغليف الأعصاب لتسريع الإشارات.'],[21,'يتغطى الجلد بالفيرنكس الدهني الواقي، وتنمو الحواجب والرموش وشعر الرأس. تتطور الحواس: يسمع الأصوات الخارجية ويتحسس اللمس، وتنشط الدورة الدموية ويبدأ نخاع العظم بالمشاركة في إنتاج خلايا الدم.'],[24,'تنمو الشعب الهوائية وتتكوّن الحويصلات الهوائية في رئتيه ويبدأ إنتاج السرفاكتانت. يتفاعل الجنين مع الأصوات والضوء الساطع ويتحسن توازنه، ويصبح البقاء ممكناً بالرعاية المركزة من نحو الأسبوع 22–24.'],[27,'تزداد تلافيف الدماغ وينشط نموه وتتنظم دورات النوم واليقظة. تنفتح الجفون ويرمش الجنين، وتنضج الأوعية الدموية في الرئتين وتتحسن حركات التنفس التدريبية.'],[31,'تتراكم الدهون تحت الجلد فيمتلئ الجسم ويتحسن ضبط حرارته. تنضج المسارات العصبية والبصرية فيستجيب للضوء، ويبدأ انتقال الأجسام المضادة من الأم عبر المشيمة لتحميه بعد الولادة. تقوى العظام وتحتاج الأم لكالسيوم كافٍ.'],[35,'تتدرب الرئتان على التنفس وتزداد كمية السرفاكتانت، ويصل السائل الأمنيوسي ذروته تقريباً. يزداد وزن الجنين بنحو 200 غ أسبوعياً وينمو الدماغ بسرعة، وتنتقل كميات أكبر من الأجسام المضادة من الأم، وتنضج الكلى.'],[37,'ينزل الرأس غالباً نحو الحوض وتتجمع في الأمعاء مادة العقي. تتكوّن الأظافر الكاملة ويزداد الدهن الواقي. من الأسبوع 37 يُعدّ الحمل مكتمل المدة مبكراً.'],[40,'تقترب الرئتان والدماغ من الجاهزية لكنهما يواصلان النضج بعد الولادة. يتساقط معظم اللانوغو ويقل الفيرنكس ويستمر انتقال الأجسام المضادة. استمري بعدّ الحركات واذهبي للمستشفى عند علامات الولادة.']];
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 let _V,_U={},_nw=1;
 const idb=()=>new Promise((res,rej)=>{try{const r=indexedDB.open('mahana-media',1);r.onupgradeneeded=()=>r.result.createObjectStore('f',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej()}catch(e){rej()}});
@@ -87,7 +80,7 @@ const sf=(i,k,ph,fl)=>`<input placeholder="${ph}" value="${esc(_V.sonar[i][k])}"
 async function mth(ids,i){let h='';for(const id of ids){let u=_U[id];if(!u){const m=await mget(id);if(!m)continue;u=_U[id]={u:URL.createObjectURL(m.blob),v:(m.type||'').startsWith('video'),p:!/^(image|video)/.test(m.type||''),n:m.name}}
 h+=`<div style="position:relative;display:inline-block;margin:3px">${u.p?`<a href="${u.u}" target="_blank" class="chip" style="display:flex;width:92px;height:92px;margin:0;align-items:center;justify-content:center;text-align:center;color:var(--tx);text-decoration:none;word-break:break-all;font-size:11px">📄 ${esc((u.n||'PDF').slice(0,18))}</a>`:u.v?`<video src="${u.u}" controls class="thumb"></video>`:`<img src="${u.u}" class="thumb" onclick="zm(this)">`}<span class="chip on" style="position:absolute;top:0;inset-inline-start:0;padding:0 7px;margin:0" onclick="dS2(${i},'${id}')">✕</span></div>`}return h}
 async function sonH(){let h='<h2 style="margin-top:12px">🔊 السونار</h2>';for(let i=0;i<_V.sonar.length;i++){const s=_V.sonar[i];
-h+=`<div class="card" style="padding:10px"><div class="row sp"><b>سونار ${i+1}</b><span onclick="dS(${i})">✕</span></div>${sf(i,'t','نوع السونار (تشريحي / نمو / ثلاثي أبعاد)')}<div class="row">${sf(i,'crl','CRL مم')}${sf(i,'bpd','BPD مم')}${sf(i,'fl','FL مم')}</div><div class="row">${sf(i,'efw','الوزن المقدّر غ')}${sf(i,'fhr','نبض الجنين')}</div><div class="row">${sf(i,'af','السائل الأمنيوسي')}${sf(i,'plc','موقع المشيمة')}</div><textarea rows="2" placeholder="نتيجة وتقرير السونار" oninput="_V.sonar[${i}].note=this.value">${esc(s.note)}</textarea><div>${await mth(s.media,i)}</div><input type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx,.txt" multiple onchange="addS(${i},this.files)"><div class="mu">صور أو فيديو أو تقرير PDF</div></div>`}
+h+=`<div class="card" style="padding:10px"><div class="row sp"><b>سونار ${i+1}</b><span onclick="dS(${i})">✕</span></div>${sf(i,'t','نوع السونار')}<div class="row">${sf(i,'crl','CRL مم')}${sf(i,'bpd','BPD مم')}${sf(i,'fl','FL مم')}</div><div class="row">${sf(i,'efw','الوزن غ')}${sf(i,'fhr','نبض الجنين')}</div><textarea rows="2" placeholder="تقرير السونار" oninput="_V.sonar[${i}].note=this.value">${esc(s.note)}</textarea><div>${await mth(s.media,i)}</div><input type="file" accept="image/*,video/*,application/pdf" multiple onchange="addS(${i},this.files)"></div>`}
 return h+`<button class="btn g" onclick="_V.sonar.push({t:'',crl:'',bpd:'',fl:'',efw:'',fhr:'',af:'',plc:'',note:'',media:[]});rv()">+ سونار</button>`}
 async function addS(i,fs){let n=0;for(const f of fs){const id='m'+Date.now()+(n++);if(await mput({id,blob:f,type:f.type,name:f.name}))_V.sonar[i].media.push(id);else alert('تعذر حفظ الملف')}await rv()}
 function dS2(i,id){if(i<0)_V.media=_V.media.filter(x=>x!==id);else _V.sonar[i].media=_V.sonar[i].media.filter(x=>x!==id);mdel(id);rv()}
@@ -96,21 +89,21 @@ function closeSh(){$('#sh').innerHTML=''}
 const wkOf=d=>S.lmp&&pd(d)?Math.floor((pd(d)-pd(S.lmp))/6048e5):'';
 function pv0(){const o=$('#pv');if(o)o.remove()}
 async function fileOpen(id){const m=await mget(id);if(!m)return;const t=m.type||'',n=esc(m.name||'ملف'),u=URL.createObjectURL(m.blob);let body;
-if(t==='application/pdf'||t.startsWith('text/'))body=`<iframe src='${u}' style='flex:1;border:0;width:100%;background:#fff'></iframe>`;else if(t.startsWith('image'))body=`<div style='flex:1;overflow:auto;text-align:center'><img src='${u}' style='max-width:100%'></div>`;else if(t.startsWith('video'))body=`<video src='${u}' controls style='flex:1;width:100%;background:#000'></video>`;else body=`<div style='flex:1;padding:20px' class='mu'>لا يمكن معاينة هذا النوع داخل التطبيق. استخدمي زر «تنزيل».</div>`;
+if(t==='application/pdf'||t.startsWith('text/'))body=`<iframe src='${u}' style='flex:1;border:0;width:100%;background:#fff'></iframe>`;else if(t.startsWith('image'))body=`<div style='flex:1;overflow:auto;text-align:center'><img src='${u}' style='max-width:100%'></div>`;else if(t.startsWith('video'))body=`<video src='${u}' controls style='flex:1;width:100%;background:#000'></video>`;else body=`<div style='flex:1;padding:20px' class='mu'>لا يمكن معاينة الملف.</div>`;
 let o=$('#pv');if(!o){o=document.createElement('div');o.id='pv';document.body.appendChild(o)}
 o.style.cssText='position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column';
-o.innerHTML=`<div class='row sp' style='padding:10px;border-bottom:1px solid var(--ln)'><b style='font-size:13px'>${n}</b><span class='row'><a class='btn g' style='text-decoration:none' href='${u}' target='_blank'>فتح</a><a class='btn g' style='text-decoration:none' href='${u}' download='${n}'>تنزيل</a><button class='btn' onclick='pv0()'>إغلاق</button></span></div>${body}`}
-async function att(ids){let h='';for(const id of ids){const m=await mget(id);if(!m)continue;const t=m.type||'',n=esc(m.name||'ملف');h+=t.startsWith('image')?`<img src='${URL.createObjectURL(m.blob)}' data-i='${id}' onclick='fileOpen(this.dataset.i)' style='width:130px;height:130px;object-fit:cover;border:1px solid #ddd;margin:3px;border-radius:6px;cursor:pointer'>`:`<a data-i='${id}' onclick='fileOpen(this.dataset.i)' style='display:inline-block;border:1px solid #c9a0b0;background:#fbeef3;color:#7a1f3d;border-radius:6px;padding:6px 10px;margin:3px;font-size:12px;cursor:pointer'>${t.startsWith('video')?'🎞️':'📄'} ${n}</a>`}return h?`<div style='margin-top:6px'><b>المرفقات (اضغطي للفتح):</b><br>${h}</div>`:''}
+o.innerHTML=`<div class='row sp' style='padding:10px;border-bottom:1px solid var(--ln)'><b style='font-size:13px'>${n}</b><span class='row'><button class='btn' onclick='pv0()'>إغلاق</button></span></div>${body}`}
+async function att(ids){let h='';for(const id of ids){const m=await mget(id);if(!m)continue;const t=m.type||'',n=esc(m.name||'ملف');h+=t.startsWith('image')?`<img src='${URL.createObjectURL(m.blob)}' data-i='${id}' onclick='fileOpen(this.dataset.i)' style='width:130px;height:130px;object-fit:cover;border:1px solid #ddd;margin:3px;border-radius:6px;cursor:pointer'>`:`<a data-i='${id}' onclick='fileOpen(this.dataset.i)' style='display:inline-block;border:1px solid #c9a0b0;background:#fbeef3;color:#7a1f3d;border-radius:6px;padding:6px 10px;margin:3px;font-size:12px;cursor:pointer'>📄 ${n}</a>`}return h?`<div style='margin-top:6px'><b>المرفقات:</b><br>${h}</div>`:''}
 function sV(){if(!_V.date){alert('اختاري تاريخ الزيارة');return}const w=wkOf(_V.date);_V.week=w!==''&&w>=0?w:'';const i=S.visits.findIndex(x=>x.id===_V.id);i<0?S.visits.push(_V):S.visits[i]=_V;save();closeSh();draw()}
-let CH=[],busy=0;
-const RULES='أنتِ «مساعدة ماهانة»، مساعدة ذكية ناطقة بالعربية تجيب الحامل عن أسئلة الحمل وأعراضه وتطوراته. اعتمدي بالكامل على بيانات حالتها الفعلية المزودة أدناه (آخر دورة، الأطباء، الزيارات، التشخيص والعلاجات، التحاليل والسونار) وقومي بتحليلها والإجابة عليها بدقة واحترافية وبصيغة المؤنث. لا تقولي أبداً إنك لا تعرفين إذا كانت المعلومة موجودة في السجلات أدناه.';
-function ctxTxt(){const p=pregInfo(),w=Math.min(Math.max(p.w,1),40),r=wk4(w),V=S.visits.slice().sort((a,b)=>a.date.localeCompare(b.date)),dr={};
-V.forEach(v=>{const n=(v.doctor||'').trim();if(n)dr[n]=(dr[n]||0)+1});
-let t=`بيانات ${pn(S.cur)}: آخر يوم لآخر دورة ${S.lmp||'لم يحدد بعد'}؛ الولادة المتوقعة ${D(p.due)}؛ العمر الحالي ${p.w} أسبوعاً و${p.d} أيام (${TR[trOf(w)].n})؛ حجم الجنين ≈ ${r[1]}؛ تاريخ اليوم ${ymd(today())}.\nعدد الزيارات: ${V.length}.\nالأطباء: ${Object.entries(dr).map(([n,c])=>n+' ('+c+' زيارات)').join('، ')||'لا يوجد'}\n`;
-V.forEach((v,k)=>{t+=`\nزيارة ${k+1}: ${v.date}${v.week!==''&&v.week!=null?' (أسبوع '+v.week+')':''}، الطبيب: ${v.doctor||'—'}، المكان: ${v.place||'—'}، السبب: ${v.reason||'—'}، التشخيص/العلاجات/الملاحظات: ${v.notes||'—'}`+(v.bp?'، الضغط '+v.bp:'')+(v.wt?'، الوزن '+v.wt:'')+(v.fh?'، نبض الجنين '+v.fh:'')+((v.meds||[]).length?'، علاجات: '+v.meds.map(m=>`${m.n} ${m.d||''} ${m.t||''}`).join('؛ '):'')+((v.tests||[]).length?'، تحاليل: '+v.tests.map(x=>`${x.n} ${x.r||''}`).join('؛ '):'')+`، ملفات مرفقة: ${(v.media||[]).length}`;
-(v.sonar||[]).forEach(s=>{t+=`\n  سونار ${s.t||''}: `+[['CRL',s.crl],['BPD',s.bpd],['FL',s.fl],['الوزن المقدّر',s.efw],['نبض الجنين',s.fhr],['السائل الأمنيوسي',s.af],['المشيمة',s.plc],['التقرير',s.note]].filter(x=>x[1]).map(x=>x[0]+' '+x[1]).join('، ')})});return t}
-function chHTML(){return CH.map(m=>`<div style='margin:6px 0'><div style='display:inline-block;max-width:94%;padding:8px 12px;border-radius:14px;background:${m.role==='user'?'var(--mar)':'var(--bg)'};border:1px solid var(--ln);white-space:pre-wrap;line-height:1.8'>${esc(m.content)}</div></div>`).join('')}
 
+let CH=[],busy=0;
+
+const RULES='أنتِ مساعدة ذكية متخصصة في الحمل ومتابعة سجلات الحامل (الزيارات، الأطباء، الأدوية، التحاليل والسونار). أجيبي بدقة بناءً على بياناتها الشخصية أدناه.';
+function ctxTxt(){const p=pregInfo(),w=Math.min(Math.max(p.w,1),40),V=S.visits;
+let t=`بيانات الحامل: أسبوع الحمل ${p.w}، الزيارات: ${V.length}\n`;
+V.forEach((v,k)=>{t+=`زيارة ${k+1}: التاريخ ${v.date}، الطبيب: ${v.doctor||'—'}، الملاحظات: ${v.notes||'—'}\n`});return t}
+
+// ربط حقيقي مباشر مع Google Gemini 1.5 Flash API
 async function ask(q){
     const inp=$('#cq');
     q=(q||(inp?inp.value:'')).trim();
@@ -119,181 +112,64 @@ async function ask(q){
     busy=1;
     CH.push({role:'user',content:q});
     const box=$('#ch');
-    box.innerHTML=chHTML()+`<div id='cb' class='mu'>جاري تحليل بياناتك عبر Gemini…</div>`;
+    box.innerHTML=chHTML()+`<div id='cb' class='mu'>جاري الاتصال بـ Gemini…</div>`;
     box.scrollTop=box.scrollHeight;
 
     try {
-        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_KEY, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [
-                            { text: RULES + "\n\n" + ctxTxt() + "\n\nسؤال المستخدم: " + q }
-                        ]
-                    }
-                ]
+                contents: [{
+                    parts: [{ text: RULES + "\n\n" + ctxTxt() + "\n\nسؤال المستخدم: " + q }]
+                }]
             })
         });
 
         const data = await response.json();
         if(data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
             const replyText = data.candidates[0].content.parts[0].text;
-            CH.push({role: 'assistant', content: replyText});
+            CH.push({role: 'model', content: replyText});
             box.innerHTML = chHTML();
         } else {
-            throw new Error(data.error?.message || 'استجابة غير صالحة من جيميناي');
+            throw new Error(data.error?.message || 'خطأ في استجابة الخادم');
         }
     } catch(e) {
         CH.pop();
         const b=$('#cb');
         if(b){
             b.className='mu';
-            b.textContent='تعذّر الاتصال بخوادم جيميناي، تأكد من صحة المفتاح أو اتصال الإنترنت.';
+            b.textContent='تعذر الاتصال المباشر بسبب حماية المتصفح (CORS). يرجى استخدام المساعد المحلي أو إعداد وسيط.';
         }
     }
     busy=0;
 }
 
-const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية (Gemini AI)</h2><div class='mu'>اسأليها عن الحمل وأعراضه وتطوراته وتحاليلك وزياراتك؛ مرتبطة مباشرة ببياناتك.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي الطبيعية هذا الأسبوع؟','لخّصي لي زياراتي وسوناراتي','ماذا أتوقع في هذا الشهر من الحمل؟'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div><div class='mu' style='margin-top:6px'>مدعومة بذكاء Google Gemini الفعلي والمباشر.</div></div>`;
+function chHTML(){return CH.map(m=>`<div style='margin:6px 0'><div style='display:inline-block;max-width:94%;padding:8px 12px;border-radius:14px;background:${m.role==='user'?'var(--mar)':'var(--bg)'};border:1px solid var(--ln);white-space:pre-wrap;line-height:1.8'>${esc(m.content)}</div></div>`).join('')}
+
+const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية (Gemini AI)</h2><div class='mu'>اسأليها عن حملك وزياراتك مباشرة.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي هذا الأسبوع؟','لخّصي لي زياراتي'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div></div>`;
 function dayChk(){const n=ymd(today());if(n!==_day){_day=n;if(!document.querySelector('.sheet')&&!document.getElementById('pv')&&!busy)draw()}}
 let _day=ymd(today());setInterval(dayChk,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dayChk()});
-function sett(){const p=pregInfo();const T=[['🥗 التغذية','الأم الحامل تحتاج زيادة بسيطة في السعرات (نحو 300–450 سعرة يومياً في الثلثين الثاني والثالث)، مع بروتين وحديد والكالسيوم وخضار وفاكهة وماء كافٍ. الزيادة المناسبة في الوزن لمن كان وزنها طبيعياً قبل الحمل نحو 11.5–16 كغ.'],['🚫 أطعمة ومواد تُتجنَّب','اللحوم والبيض والأسماك النيئة، الأجبان الطرية غير المبسترة، الإكثار من الكبدة، الأسماك عالية الزئبق (القرش وأبو سيف)، الكحول، التدخين، وزيادة الكافيين عن نحو 200 ملغ يومياً.'],['🚶 الرياضة','يُنصح عادةً بنحو 150 دقيقة أسبوعياً من نشاط معتدل كالمشي والسباحة، ما لم يمنع الطبيب ذلك. تجنّبي الرياضات العنيفة والرياضات المعرّضة للسقوط.'],['💉 التطعيمات','لقاح الإنفلونزا الموسمي مناسب في أي ثلث، ولقاح Tdap (السعال الديكي) يُعطى عادةً بين الأسبوع 27 و36 من كل حمل، بعد استشارة الطبيب.'],['😴 النوم','يُفضَّل النوم على الجانب (الأيسر غالباً) مع وسادة بين الركبتين، وخاصة في الثلث الثالث.'],['🚨 علامات الخطر','نزيف مهبلي، نزول ماء، ألم شديد في البطن، صداع شديد مع تشوش الرؤية، تورم مفاجئ في الوجه واليدين، حرارة مرتفعة، أو نقص واضح في حركة الجنين: راجعي الطبيب أو الطوارئ فوراً.']];
-return `<h1>⚙️ الإعدادات</h1><div class='card'><h2>وضع التتبع</h2><div class='pgs'>${S.ps.map((x,i)=>`<button class='pgb ${i===S.cur?'on':''}' onclick='setPreg(${i})'>🤰 ${pn(i)}</button>`).join('')}</div><button class='btn g' style='width:100%;padding:13px;margin-top:8px' onclick='addPreg()'>+ إضافة حمل جديد</button><div class='mu' style='margin-top:6px'>اضغطي على أي حمل لعرض ملخصه وحفظه أو حذفه.</div></div><div class='card'><h2>آخر يوم لآخر دورة · ${pn(S.cur)}</h2><input type='date' value='${S.lmp}' onchange='S.lmp=this.value;save();draw()'><div class='mu' style='margin-top:6px'>الولادة المتوقعة: ${D(p.due)} · الأسبوع ${Math.max(0,p.w)} و${Math.max(0,p.d)} أيام</div></div><div class='card'><h2>📚 المكتبة الصحية</h2>${T.map(t=>`<details style='border-top:1px solid var(--ln);padding:8px 0'><summary style='cursor:pointer;font-weight:600'>${t[0]}</summary><p class='mu' style='margin:6px 0 0'>${t[1]}</p></details>`).join('')}<div class='mu'>معلومات عامة للتثقيف ولا تغني عن استشارة الطبيب.</div></div>`}
+function sett(){const p=pregInfo();return `<h1>⚙️ الإعدادات</h1><div class='card'><h2>آخر يوم لآخر دورة</h2><input type='date' value='${S.lmp}' onchange='S.lmp=this.value;save();draw()'><div class='mu' style='margin-top:6px'>الولادة المتوقعة: ${D(p.due)}</div></div>`}
 
 function home(){
     const p=pregInfo();
-    
     if(p.unset) {
-        return `<h1>🤰 متابعة الحمل · ${pn(S.cur)}</h1>
-        <div class='card' style='text-align:center;padding:24px 14px;'>
-            <div style='font-size:48px;margin-bottom:12px'>🗓️</div>
-            <h2>مرحباً بكِ في ماهانة</h2>
-            <p class='mu' style='margin-bottom:16px;'>يرجى تحديد تاريخ أول يوم من آخر دورة شهرية للبدء بحساب عمر الحمل والعد التنازلي.</p>
-            <input type='date' style='font-size:16px;padding:12px;margin-bottom:14px;' onchange='S.lmp=this.value;save();draw();'>
-            <div class='mu'>العداد حالياً: <b>0 أسبوع و0 يوم</b></div>
-        </div>
-        ${aic()}`;
+        return `<h1>🤰 متابعة الحمل</h1><div class='card' style='text-align:center;padding:24px 14px;'><h2>مرحباً بكِ في ماهانة</h2><p class='mu' style='margin-bottom:16px;'>يرجى تحديد تاريخ أول يوم من آخر دورة شهرية.</p><input type='date' style='font-size:16px;padding:12px;margin-bottom:14px;' onchange='S.lmp=this.value;save();draw();'></div>${aic()}`;
     }
-
-    const w=Math.min(Math.max(p.w,1),40),r=wk4(w),pr=Math.min(100,Math.max(0,p.days/280*100)),R=44,C=2*Math.PI*R,L=Math.max(0,p.left),m=Math.min(9,Math.floor(Math.max(0,p.days)/30.44)+1),B=BD.find(x=>w<=x[0])||BD[5],sy=w<4?['لا أعراض حمل واضحة بعد','تغيّرات الدورة الطبيعية','قد يظهر نزيف انغراس خفيف']:B[2],sz=w<3?'لا يوجد حجم محدد':`الطول ≈ ${r[2]} سم · الوزن ≈ ${r[3]?r[3]+' غ':'أقل من 1 غ'}`,dt=DET.find(x=>w<=x[0])[1];
-    return `<h1>🤰 متابعة الحمل${S.ps.length>1?' · '+pn(S.cur):''}</h1><div class='card row sp'><svg width='110' height='110' viewBox='0 0 110 110'><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ln)' stroke-width='9'/><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ac)' stroke-width='9' stroke-linecap='round' stroke-dasharray='${C*pr/100} ${C}' transform='rotate(-90 55 55)'/><text x='55' y='60' text-anchor='middle' fill='var(--tx)' font-size='18' font-weight='700'>${Math.round(pr)}%</text></svg><div style='flex:1'><div style='font-size:19px;font-weight:700'>الأسبوع ${Math.max(0,p.w)} و${Math.max(0,p.d)} أيام</div><div class='mu'>الشهر ${m} · ${TR[trOf(w)].n}<br>المتبقي: ${L} يوماً (${Math.floor(L/7)} أسبوعاً و${L%7} أيام)<br>الولادة المتوقعة: ${D(p.due)}</div></div></div>
-    <div class='card' style='text-align:center'><h2>حجم الجنين الآن</h2><div style='font-size:96px;line-height:1.2'>${EM[w-1]}</div><div style='font-size:18px;font-weight:700'>${w<4?r[1]:'بحجم '+r[1]}</div><div class='mu'>${sz}</div></div>
-    <div class='card'><h2>🔬 معلومة علمية · الأسبوع ${w}</h2><p style='margin:0;line-height:1.9'>${FACT[w-1]}</p><details style='margin-top:8px'><summary class='btn g' style='display:inline-block;list-style:none;cursor:pointer'>المزيد من المعلومات العلمية</summary><p style='line-height:1.9;margin:8px 0 0'>${dt}</p></details></div>
-    <div class='card'><h2>🤱 أعراض شائعة قد تشعرين بها الآن</h2><ul>${sy.map(x=>`<li>${x}</li>`).join('')}</ul></div>${aic()}<button class='fab np' aria-label='زيارة جديدة' onclick='editV()'>+</button>`
-}
-
-const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]||'');f.readAsDataURL(b)});
-
-async function bkSave(){
-    const includeMedia = confirm('هل تريد تضمين الصور والمرفقات مع ألنسخة الاحتياطية؟\n(اضغط "إلغاء" لتنزيل البيانات النصية والزيارات فقط لتكون خفيفة وسريعة)');
-    let media = [];
-    if (includeMedia) {
-        const ids = [];
-        S.ps.forEach(p => p.visits.forEach(v => {
-            (v.media || []).forEach(i => ids.push(i));
-            (v.sonar || []).forEach(s => (s.media || []).forEach(i => ids.push(i)));
-        }));
-        for (const id of ids) {
-            const m = await mget(id);
-            if (m && m.blob.size < 10 * 1024 * 1024) {
-                media.push({ id, name: m.name, type: m.type, b64: await b64(m.blob) });
-            }
-        }
-    }
-    try {
-        const dataStr = JSON.stringify({ app: 'mahana', v: 2, S, media });
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'mahana-backup-' + ymd(today()) + '.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (e) {
-        alert('تعذر حفظ ألنسخة الاحتياطية.');
-    }
-}
-
-function bkPick(){$('#rf').click()}
-
-async function bkLoad(f){
-    if(!f)return;
-    try {
-        const text = await f.text();
-        const d = JSON.parse(text);
-        if(d.app!=='mahana'||!d.S)throw new Error('ملف غير صالح');
-        if(!confirm('سيتم استبدال البيانات الحالية بالنسخة. متابعة؟'))return;
-        for(const m of d.media||[]){
-            const u8 = Uint8Array.from(atob(m.b64), c => c.charCodeAt(0));
-            await mput({ id: m.id, blob: new Blob([u8], { type: m.type }), type: m.type, name: m.name });
-        }
-        S = mkS(d.S);
-        CH = [];
-        save();
-        alert('تمت استعادة ألنسخة الاحتياطية بنجاح!');
-        draw();
-    } catch(e) {
-        alert('ملف النسخة غير صالح أو تالف.');
-    }
+    const w=Math.min(Math.max(p.w,1),40),r=wk4(w),pr=Math.min(100,Math.max(0,p.days/280*100)),R=44,C=2*Math.PI*R,L=Math.max(0,p.left),m=Math.min(9,Math.floor(Math.max(0,p.days)/30.44)+1),sz=w<3?'':`الطول ≈ ${r[2]} سم`;
+    return `<h1>🤰 متابعة الحمل</h1><div class='card row sp'><svg width='110' height='110' viewBox='0 0 110 110'><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ln)' stroke-width='9'/><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ac)' stroke-width='9' stroke-linecap='round' stroke-dasharray='${C*pr/100} ${C}' transform='rotate(-90 55 55)'/><text x='55' y='60' text-anchor='middle' fill='var(--tx)' font-size='18' font-weight='700'>${Math.round(pr)}%</text></svg><div style='flex:1'><div style='font-size:19px;font-weight:700'>الأسبوع ${p.w} و${p.d} أيام</div><div class='mu'>المتبقي: ${L} يوماً<br>الولادة: ${D(p.due)}</div></div></div><div class='card' style='text-align:center'><h2>حجم الجنين</h2><div style='font-size:80px'>${EM[w-1]}</div><div><b>${r[1]}</b></div><div class='mu'>${sz}</div></div>${aic()}<button class='fab np' onclick='editV()'>+</button>`
 }
 
 const wk4=w=>[w,FR[w-1][1],FR[w-1][2],FR[w-1][3]];
 async function editV(id){const v=S.visits.find(x=>x.id===id);_nw=!v;_V=v?JSON.parse(JSON.stringify(v)):{id:'v'+Date.now(),date:ymd(today()),doctor:'',place:'',reason:'',notes:''};['meds','tests','sonar','media'].forEach(k=>_V[k]=_V[k]||[]);await rv()}
 function addRow(a){_V[a].push(a==='meds'?{n:'',d:'',t:''}:{n:'',r:'',g:''});rv()}
 function delRow(a,i){_V[a].splice(i,1);rv()}
-async function rv(){const o=document.querySelector('.sheet>div'),y=o?o.scrollTop:0,sh=await sonH(),th=await mth(_V.media,-1),wn=wkOf(_V.date);
-const rows=(a,f)=>_V[a].map((m,i)=>`<div class='row' style='margin:3px 0'>${f.map(k=>ri(a,i,k[0],k[1],k[2])).join('')}<span onclick='delRow("${a}",${i})'>✕</span></div>`).join('');
-$('#sh').innerHTML=`<div class='sheet' onclick='if(event.target===this)closeSh()'><div><h2>${_nw?'زيارة جديدة':'تفاصيل الزيارة'}</h2>${fi('date','التاريخ','date')}<div class='mu'>${wn!==''&&wn>=0&&wn<=43?'أسبوع الحمل وقت الزيارة: '+wn:''}</div>${fi('doctor','اسم الطبيب')}${fi('place','المستشفى / العيادة')}${fi('reason','سبب الزيارة')}<div class='mu' style='margin-top:6px'>التشخيص وملاحظات الطبيب</div><textarea rows='3' oninput='_V.notes=this.value'>${esc(_V.notes)}</textarea>
-<h2 style='margin-top:12px'>💊 الأدوية والعلاجات</h2>${rows('meds',[['n','الدواء',2],['d','الجرعة',1],['t','المدة',1]])}<button class='btn g' onclick='addRow("meds")'>+ دواء / علاج</button>
-<h2 style='margin-top:12px'>🧪 التحاليل الطبية</h2>${rows('tests',[['n','التحليل',2],['r','النتيجة',1],['g','الطبيعي',1]])}<button class='btn g' onclick='addRow("tests")'>+ تحليل</button>
-${sh}<h2 style='margin-top:12px'>📎 ملفات وتقارير طبية (PDF، صور، فيديو)</h2><div>${th}</div><input type='file' accept='image/*,video/*,application/pdf,.pdf,.doc,.docx,.txt' multiple onchange='addM(this.files)'>
-<div class='row' style='margin-top:12px'><button class='btn' onclick='sV()'>حفظ</button>${_nw?'':`<button class='btn g' onclick='xV()'>حذف</button>`}<button class='btn g' onclick='closeSh()'>إغلاق</button></div></div></div>`;
-const n=document.querySelector('.sheet>div');if(n)n.scrollTop=y}
-function visits(){const V=S.visits.slice().sort((a,b)=>a.date.localeCompare(b.date)),G=new Map();
-V.forEach(v=>{const n=(v.doctor||'').trim()||'بدون اسم';if(!G.has(n))G.set(n,[]);G.get(n).push(v)});
-const sec=(t,a,f)=>`<div style='font-weight:700;margin-top:10px'>${t}</div>${a.map(f).join('')||`<div class='mu'>—</div>`}`;
-return `<h1>🩺 الزيارات الطبية${S.ps.length>1?' · '+pn(S.cur):''}</h1><div class='card row'><button class='btn' style='flex:1;padding:13px;background:var(--mar)' onclick='repPDF()'>📄 التقرير الطبي</button><button class='btn' style='flex:1;padding:13px' onclick='editV()'>+ زيارة جديدة</button></div><h2 style='margin:14px 2px 8px'>👩‍⚕️ الأطباء</h2>${[...G].map(([n,a],i)=>{
-const ms=a.flatMap(v=>(v.meds||[]).filter(m=>m.n).map(m=>[m,v.date])),ts=a.flatMap(v=>(v.tests||[]).filter(t=>t.n).map(t=>[t,v.date]));
-return `<div class='card'><details><summary style='cursor:pointer;font-weight:700'>👩‍⚕️ دكتورة ${i+1} · ${esc(n)} <span class='mu'>(${a.length} زيارة)</span></summary>${sec('💊 الأدوية والعلاجات',ms,([m,d])=>`<div class='vis'><b>${esc(m.n)}</b> ${esc(m.d)} ${esc(m.t)}<div class='mu'>${d}</div></div>`)}${sec('🧪 التحاليل الطبية',ts,([t,d])=>`<div class='vis'><b>${esc(t.n)}</b>: ${esc(t.r)} <span class='mu'>(الطبيعي ${esc(t.g||'—')})</span><div class='mu'>${d}</div></div>`)}</details><div class='mu' style='margin-top:6px'>${esc([...new Set(a.map(v=>v.place).filter(Boolean))].join('، '))}</div>${a.slice().reverse().map(v=>`<div class='vis on' data-i='${v.id}' onclick='editV(this.dataset.i)' style='cursor:pointer'><b>${esc(v.date)}</b>${v.week!==''&&v.week!=null?' · أسبوع '+esc(v.week):''}<div class='mu'>${esc(v.reason)}</div></div>`).join('')}</div>`}).join('')||`<div class='card mu'>لا توجد زيارات بعد. اضغطي «زيارة جديدة» لإضافة أول زيارة وطبيبتك.</div>`}
-<div class='card'>
-    <h2>💾 ألنسخة الاحتياطية</h2>
-    <div class='mu' style='margin-bottom:8px'>تنزيل نسخة محلية بصيغة JSON أو استعادتها :</div>
-    <div class='row'>
-        <button class='btn' style='flex:1' onclick='bkSave()'>تنزيل نسخة</button>
-        <button class='btn g' style='flex:1' onclick='bkPick()'>أستعادة نسخة</button>
-    </div>
-    <input id='rf' type='file' accept='.json,application/json' style='display:none' onchange='bkLoad(this.files[0])'>
-</div>`}
-
-async function repPDF(){const p=pregInfo(),w=Math.min(Math.max(p.w,1),40),r=wk4(w),V=S.visits.slice().sort((a,b)=>a.date.localeCompare(b.date)),ln=(a,b)=>b?`<tr><th>${a}</th><td>${esc(b)}</td></tr>`:'',tb=(h,rs)=>`<table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rs.map(c=>`<tr>${c.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</table>`;
-let vh='';for(let k=0;k<V.length;k++){const v=V[k];let b=`<div class='vb'><h3>زيارة ${k+1} — ${esc(v.date)}${v.week!==''&&v.week!=null?' (أسبوع '+esc(v.week)+')':''}</h3><table>${ln('الطبيب',v.doctor)}${ln('المكان',v.place)}${ln('سبب الزيارة',v.reason)}${ln('التشخيص وملاحظات الطبيب',v.notes)}</table>`;
-const me=(v.meds||[]).filter(m=>m.n),te=(v.tests||[]).filter(t=>t.n);
-if(me.length)b+=`<b>💊 الأدوية والعلاجات</b>`+tb(['الدواء','الجرعة','المدة'],me.map(m=>[m.n,m.d,m.t]));
-if(te.length)b+=`<b>🧪 التحاليل</b>`+tb(['التحليل','النتيجة','الطبيعي'],te.map(t=>[t.n,t.r,t.g]));
-for(const s of(v.sonar||[]))b+=`<b>🔊 سونار: ${esc(s.t||'—')}</b><table>${ln('CRL (مم)',s.crl)}${ln('BPD (مم)',s.bpd)}${ln('FL (مم)',s.fl)}${ln('الوزن المقدّر (غ)',s.efw)}${ln('نبض الجنين',s.fhr)}${ln('السائل الأمنيوسي',s.af)}${ln('المشيمة',s.plc)}${ln('التقرير',s.note)}</table>`+await att(s.media||[]);
-b+=await att(v.media||[]);vh+=b+'</div>'}
-$('#sh').innerHTML=`<div class='sheet'><div style='padding:8px'><div class='np row' style='margin-bottom:8px'><button class='btn' onclick='window.print()'>🖨️ طباعة / حفظ PDF</button><button class='btn g' onclick='closeSh()'>إغلاق</button></div><div class='pp'><h1>التقرير الطبي للحمل${S.ps.length>1?' — '+pn(S.cur):''}</h1><div>تاريخ التقرير: ${D(today())}</div><h2>ملخص الحمل</h2><table><tr><th>آخر يوم لآخر دورة</th><td>${S.lmp?D(pd(S.lmp)):'لم يحدد'}</td></tr><tr><th>الولادة المتوقعة</th><td>${D(p.due)}</td></tr><tr><th>عمر الحمل الحالي</th><td>${Math.max(0,p.w)} أسبوعاً و${Math.max(0,p.d)} أيام (${TR[trOf(w)].n})</td></tr><tr><th>حجم الجنين</th><td>بحجم ${r[1]} تقريباً${r[2]?'، الطول '+r[2]+' سم':''}</td></tr><tr><th>عدد الزيارات</th><td>${V.length}</td></tr></table><h2>تفاصيل الزيارات الطبية</h2>${vh||'<p>لا توجد زيارات مسجلة.</p>'}<div class='ft'>أُنشئ بتطبيق ماهانة. المعلومات للتوثيق والتثقيف ولا تغني عن استشارة الطبيب.</div></div></div></div>`}
-
+async function rv(){const o=document.querySelector('.sheet>div'),y=o?o.scrollTop:0,sh=await sonH(),th=await mth(_V.media,-1);
+$('#sh').innerHTML=`<div class='sheet' onclick='if(event.target===this)closeSh()'><div><h2>${_nw?'زيارة جديدة':'تفاصيل الزيارة'}</h2>${fi('date','التاريخ','date')}${fi('doctor','اسم الطبيب')}${fi('place','المستشفى')}${fi('reason','السبب')}<textarea rows='3' oninput='_V.notes=this.value'>${esc(_V.notes)}</textarea>${sh}<div class='row' style='margin-top:12px'><button class='btn' onclick='sV()'>حفظ</button><button class='btn g' onclick='closeSh()'>إغلاق</button></div></div></div>`;}
+function visits(){const V=S.visits.slice().sort((a,b)=>a.date.localeCompare(b.date));
+return `<h1>🩺 الزيارات الطبية</h1><div class='card row'><button class='btn' style='flex:1;padding:13px' onclick='editV()'>+ زيارة جديدة</button></div>${V.map(v=>`<div class='card'><b>${esc(v.date)}</b> - د. ${esc(v.doctor||'—')}</div>`).join('')||`<div class='card mu'>لا توجد زيارات.</div>`}`}
 function draw(){$('#app').innerHTML=[home,visits,sett][tab]();$('#nav').innerHTML=[['🏠','الرئيسية'],['🩺','الزيارات'],['⚙️','الإعدادات']].map((t,i)=>`<button class="${i===tab?'on':''}" onclick="tab=${i};draw();scrollTo(0,0)"><span>${t[0]}</span>${t[1]}</button>`).join('')}
-
-let _pi=0,_pl='',_pc=0;
-function pgRender(){const i=_pi,p=S.ps[i],pi=pregInfo(),w=Math.min(Math.max(pi.w,1),40),r=wk4(w),ds=new Set();let me=0,te=0,so=0,fl=0;
-p.visits.forEach(v=>{if((v.doctor||'').trim())ds.add(v.doctor.trim());me+=(v.meds||[]).filter(m=>m.n).length;te+=(v.tests||[]).filter(t=>t.n).length;so+=(v.sonar||[]).length;fl+=(v.media||[]).length+(v.sonar||[]).reduce((a,s)=>a+(s.media||[]).length,0)});
-const dt=p.visits.map(v=>v.date).sort(),ln=(a,b)=>`<div class='row sp' style='padding:6px 0;border-bottom:1px solid var(--ln)'><span class='mu'>${a}</span><b>${b}</b></div>`;
-$('#sh').innerHTML=`<div class='sheet' onclick='if(event.target===this)closeSh()'><div><h2>🤰 ${pn(i)} (${i+1})</h2><div class='mu'>آخر يوم لآخر دورة</div><input type='date' value='${_pl}' oninput='_pl=this.value' style='margin-bottom:8px'>${ln('عمر الحمل الحالي',Math.max(0,pi.w)+' أسبوعاً و'+Math.max(0,pi.d)+' أيام')}${ln('المرحلة',TR[trOf(w)].n)}${ln('الولادة المتوقعة',D(pi.due))}${ln('حجم الجنين','بحجم '+r[1])}${ln('عدد الزيارات',p.visits.length)}${ln('عدد الأطباء',ds.size)}${ln('الأدوية والعلاجات',me)}${ln('التحاليل الطبية',te)}${ln('السونار',so)}${ln('الملفات المرفقة',fl)}${dt.length?ln('أول زيارة',dt[0])+ln('آخر زيارة',dt[dt.length-1]):''}<div class='row' style='margin-top:14px'><button class='btn' style='flex:1;padding:13px' onclick='pgSave()'>حفظ</button><button class='btn' style='flex:1;padding:13px;background:#c0394f' onclick='pgDel()'>${_pc?'تأكيد الحذف':'حذف'}</button></div>${_pc?`<div class='mu' style='margin-top:6px'>سيُحذف ${pn(i)} بكل زياراته وبياناته وملفاته نهائياً. اضغطي «تأكيد الحذف» للمتابعة.</div>`:''}</div></div>`}
-function pgSheet(i){_pi=i;_pc=0;_pl=S.ps[i].lmp;pgRender()}
-function pgSave(){S.ps[_pi].lmp=_pl;CH=[];save();closeSh();draw()}
-function pgDel(){if(!_pc){_pc=1;pgRender();return}const i=_pi;S.ps[i].visits.forEach(v=>{(v.media||[]).forEach(mdel);(v.sonar||[]).forEach(s=>(s.media||[]).forEach(mdel))});
-if(S.ps.length===1)S.ps[0]={lmp:'',visits:[]};else{S.ps.splice(i,1);S.cur=i<S.cur?S.cur-1:Math.min(S.cur,S.ps.length-1)}
-CH=[];save();closeSh();draw()}
-function setPreg(i){S.cur=i;CH=[];save();draw();pgSheet(i)}
-function addPreg(){S.ps.push({lmp:'',visits:[]});S.cur=S.ps.length-1;CH=[];save();draw();pgSheet(S.cur)}
 draw();
 </script>
 </body>
