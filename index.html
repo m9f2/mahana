@@ -31,6 +31,7 @@
 <div id="sh"></div>
 <script>
 const $=s=>document.querySelector(s);
+const GROQ_KEY = "Gsk_XUXaiONlhOCn1mlNlcd0WGdyb3FYwS2tWuK1euSZZJzfE3BNQZ6Q";
 const ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'],pn=i=>i<10?'الحمل '+ORD[i]:'الحمل رقم '+(i+1);
 function mkS(r){const o={ps:r.ps&&r.ps.length?r.ps:[{lmp:'',visits:r.visits||[]}],cur:r.cur||0};o.ps.forEach(p=>{p.visits=p.visits||[]});if(o.cur>=o.ps.length)o.cur=0;
 Object.defineProperty(o,'lmp',{get:()=>o.ps[o.cur].lmp,set:v=>{o.ps[o.cur].lmp=v}});Object.defineProperty(o,'visits',{get:()=>o.ps[o.cur].visits,set:v=>{o.ps[o.cur].visits=v}});return o}
@@ -109,13 +110,55 @@ let t=`بيانات ${pn(S.cur)}: آخر يوم لآخر دورة ${S.lmp||'لم
 V.forEach((v,k)=>{t+=`\nزيارة ${k+1}: ${v.date}${v.week!==''&&v.week!=null?' (أسبوع '+v.week+')':''}، الطبيب: ${v.doctor||'—'}، المكان: ${v.place||'—'}، السبب: ${v.reason||'—'}، التشخيص/العلاجات/الملاحظات: ${v.notes||'—'}`+(v.bp?'، الضغط '+v.bp:'')+(v.wt?'، الوزن '+v.wt:'')+(v.fh?'، نبض الجنين '+v.fh:'')+((v.meds||[]).length?'، علاجات: '+v.meds.map(m=>`${m.n} ${m.d||''} ${m.t||''}`).join('؛ '):'')+((v.tests||[]).length?'، تحاليل: '+v.tests.map(x=>`${x.n} ${x.r||''}`).join('؛ '):'')+`، ملفات مرفقة: ${(v.media||[]).length}`;
 (v.sonar||[]).forEach(s=>{t+=`\n  سونار ${s.t||''}: `+[['CRL',s.crl],['BPD',s.bpd],['FL',s.fl],['الوزن المقدّر',s.efw],['نبض الجنين',s.fhr],['السائل الأمنيوسي',s.af],['المشيمة',s.plc],['التقرير',s.note]].filter(x=>x[1]).map(x=>x[0]+' '+x[1]).join('، ')})});return t}
 function chHTML(){return CH.map(m=>`<div style='margin:6px 0'><div style='display:inline-block;max-width:94%;padding:8px 12px;border-radius:14px;background:${m.role==='user'?'var(--mar)':'var(--bg)'};border:1px solid var(--ln);white-space:pre-wrap;line-height:1.8'>${esc(m.content)}</div></div>`).join('')}
-async function ask(q){const inp=$('#cq');q=(q||(inp?inp.value:'')).trim();if(!q||busy)return;if(inp)inp.value='';busy=1;CH.push({role:'user',content:q});const box=$('#ch');box.innerHTML=chHTML()+`<div id='cb' class='mu'>جارٍ التفكير…</div>`;box.scrollTop=box.scrollHeight;
-let smp=null;try{smp=window.claude&&await claude.use('sample')}catch(e){}
-if(!smp){CH.pop();busy=0;const b=$('#cb');if(b)b.textContent='المساعد متاح فقط عند فتح التطبيق من داخل Claude.';return}
-try{const r=await smp([{role:'user',content:RULES+'\n\n'+ctxTxt()},{role:'assistant',content:'فهمت بيانات الحالة وسأجيب بإيجاز وبالعربية.'},...CH.slice(-7)],{cache:false,onText:({text})=>{const b=$('#cb');if(b){b.className='';b.style.whiteSpace='pre-wrap';b.textContent=text;box.scrollTop=box.scrollHeight}}});CH.push({role:'assistant',content:r.text});box.innerHTML=chHTML()}
-catch(e){CH.pop();const b=$('#cb');if(b){b.className='mu';b.textContent=e.code==='not_granted'||e.code==='sampling_disabled'?'لم يُسمح للتطبيق باستخدام Claude، فالمساعد غير متاح.':e.code==='rate_limited'?'عدد الطلبات كبير، حاولي بعد قليل.':'تعذّر الحصول على إجابة، حاولي مرة أخرى.'}}
-busy=0}
-const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية</h2><div class='mu'>اسأليها عن الحمل وأعراضه وتطوراته؛ تعرف بيانات أطبائك وزياراتك وسوناراتك.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي الطبيعية هذا الأسبوع؟','لخّصي لي زياراتي وسوناراتي','ماذا أتوقع في هذا الشهر من الحمل؟'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div><div class='mu' style='margin-top:6px'>لا تتصفح الإنترنت؛ تجيب من معرفتها وبيانات تطبيقك، وليست بديلاً عن الطبيب.</div></div>`;
+
+async function ask(q){
+    const inp=$('#cq');
+    q=(q||(inp?inp.value:'')).trim();
+    if(!q||busy)return;
+    if(inp)inp.value='';
+    busy=1;
+    CH.push({role:'user',content:q});
+    const box=$('#ch');
+    box.innerHTML=chHTML()+`<div id='cb' class='mu'>جارٍ التفكير…</div>`;
+    box.scrollTop=box.scrollHeight;
+
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + GROQ_KEY,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {role: "system", content: RULES + "\n\n" + ctxTxt()},
+                    ...CH.slice(-7).map(m => ({role: m.role, content: m.content}))
+                ],
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        if(data.choices && data.choices[0] && data.choices[0].message) {
+            const replyText = data.choices[0].message.content;
+            CH.push({role: 'assistant', content: replyText});
+            box.innerHTML = chHTML();
+        } else {
+            throw new Error(data.error?.message || 'استجابة غير صالحة');
+        }
+    } catch(e) {
+        CH.pop();
+        const b=$('#cb');
+        if(b){
+            b.className='mu';
+            b.textContent='تعذّر الاتصال بالمساعد الذكي، تأكد من اتصال الإنترنت أو صحة المفتاح.';
+        }
+    }
+    busy=0;
+}
+
+const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية</h2><div class='mu'>اسأليها عن الحمل وأعراضه وتطوراته؛ تعرف بيانات أطبائك وزياراتك وسوناراتك.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي الطبيعية هذا الأسبوع؟','لخّصي لي زياراتي وسوناراتي','ماذا أتوقع في هذا الشهر من الحمل؟'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div><div class='mu' style='margin-top:6px'>تعتمد على ذكاء Llama المفتوح المصدر، وليست بديلاً عن الطبيب.</div></div>`;
 function dayChk(){const n=ymd(today());if(n!==_day){_day=n;if(!document.querySelector('.sheet')&&!document.getElementById('pv')&&!busy)draw()}}
 let _day=ymd(today());setInterval(dayChk,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dayChk()});
 function sett(){const p=pregInfo();const T=[['🥗 التغذية','الأم الحامل تحتاج زيادة بسيطة في السعرات (نحو 300–450 سعرة يومياً في الثلثين الثاني والثالث)، مع بروتين وحديد والكالسيوم وخضار وفاكهة وماء كافٍ. الزيادة المناسبة في الوزن لمن كان وزنها طبيعياً قبل الحمل نحو 11.5–16 كغ.'],['🚫 أطعمة ومواد تُتجنَّب','اللحوم والبيض والأسماك النيئة، الأجبان الطرية غير المبسترة، الإكثار من الكبدة، الأسماك عالية الزئبق (القرش وأبو سيف)، الكحول، التدخين، وزيادة الكافيين عن نحو 200 ملغ يومياً.'],['🚶 الرياضة','يُنصح عادةً بنحو 150 دقيقة أسبوعياً من نشاط معتدل كالمشي والسباحة، ما لم يمنع الطبيب ذلك. تجنّبي الرياضات العنيفة والرياضات المعرّضة للسقوط.'],['💉 التطعيمات','لقاح الإنفلونزا الموسمي مناسب في أي ثلث، ولقاح Tdap (السعال الديكي) يُعطى عادةً بين الأسبوع 27 و36 من كل حمل، بعد استشارة الطبيب.'],['😴 النوم','يُفضَّل النوم على الجانب (الأيسر غالباً) مع وسادة بين الركبتين، وخاصة في الثلث الثالث.'],['🚨 علامات الخطر','نزيف مهبلي، نزول ماء، ألم شديد في البطن، صداع شديد مع تشوش الرؤية، تورم مفاجئ في الوجه واليدين، حرارة مرتفعة، أو نقص واضح في حركة الجنين: راجعي الطبيب أو الطوارئ فوراً.']];
@@ -235,7 +278,7 @@ if(me.length)b+=`<b>💊 الأدوية والعلاجات</b>`+tb(['الدوا�
 if(te.length)b+=`<b>🧪 التحاليل</b>`+tb(['التحليل','النتيجة','الطبيعي'],te.map(t=>[t.n,t.r,t.g]));
 for(const s of(v.sonar||[]))b+=`<b>🔊 سونار: ${esc(s.t||'—')}</b><table>${ln('CRL (مم)',s.crl)}${ln('BPD (مم)',s.bpd)}${ln('FL (مم)',s.fl)}${ln('الوزن المقدّر (غ)',s.efw)}${ln('نبض الجنين',s.fhr)}${ln('السائل الأمنيوسي',s.af)}${ln('المشيمة',s.plc)}${ln('التقرير',s.note)}</table>`+await att(s.media||[]);
 b+=await att(v.media||[]);vh+=b+'</div>'}
-$('#sh').innerHTML=`<div class='sheet'><div style='padding:8px'><div class='np row' style='margin-bottom:8px'><button class='btn' onclick='window.print()'>🖨️ طباعة / حفظ PDF</button><button class='btn g' onclick='closeSh()'>إغلاق</button></div><div class='pp'><h1>التقرير الطبي للحمل${S.ps.length>1?' — '+pn(S.cur):''}</h1><div>تاريخ التقرير: ${D(today())}</div><h2>ملخص الحمل</h2><table><tr><th>آخر يوم لآخر دورة</th><td>${S.lmp?D(pd(S.lmp)):'لم يحدد'}</td></tr><tr><th>الولادة المتوقعة</th><td>${D(p.due)}</td></tr><tr><th>عمر الحمل الحالي</th><td>${Math.max(0,p.w)} أسبوعاً و${Math.max(0,p.d)} أيام (${TR[trOf(w)].n})</td></tr><tr><th>حجم الجنين</th><td>بحجم ${r[1]} تقريباً${r[2]?'، الطول ≈ '+r[2]+' سم':''}</td></tr><tr><th>عدد الزيارات</th><td>${V.length}</td></tr></table><h2>تفاصيل الزيارات الطبية</h2>${vh||'<p>لا توجد زيارات مسجلة.</p>'}<div class='ft'>أُنشئ بتطبيق ماهانة. المعلومات للتوثيق والتثقيف ولا تغني عن استشارة الطبيب.</div></div></div></div>`}
+$('#sh').innerHTML=`<div class='sheet'><div style='padding:8px'><div class='np row' style='margin-bottom:8px'><button class='btn' onclick='window.print()'>🖨️ طباعة / حفظ PDF</button><button class='btn g' onclick='closeSh()'>إغلاق</button></div><div class='pp'><h1>التقرير الطبي للحمل${S.ps.length>1?' — '+pn(S.cur):''}</h1><div>تاريخ التقرير: ${D(today())}</div><h2>ملخص الحمل</h2><table><tr><th>آخر يوم لآخر دورة</th><td>${S.lmp?D(pd(S.lmp)):'لم يحدد'}</td></tr><tr><th>الولادة المتوقعة</th><td>${D(p.due)}</td></tr><tr><th>عمر الحمل الحالي</th><td>${Math.max(0,p.w)} أسبوعاً و${Math.max(0,p.d)} أيام (${TR[trOf(w)].n})</td></tr><tr><th>حجم الجنين</th><td>بحجم ${r[1]} تقريباً${r[2]?'، الطول '+r[2]+' سم':''}</td></tr><tr><th>عدد الزيارات</th><td>${V.length}</td></tr></table><h2>تفاصيل الزيارات الطبية</h2>${vh||'<p>لا توجد زيارات مسجلة.</p>'}<div class='ft'>أُنشئ بتطبيق ماهانة. المعلومات للتوثيق والتثقيف ولا تغني عن استشارة الطبيب.</div></div></div></div>`}
 
 function draw(){$('#app').innerHTML=[home,visits,sett][tab]();$('#nav').innerHTML=[['🏠','الرئيسية'],['🩺','الزيارات'],['⚙️','الإعدادات']].map((t,i)=>`<button class="${i===tab?'on':''}" onclick="tab=${i};draw();scrollTo(0,0)"><span>${t[0]}</span>${t[1]}</button>`).join('')}
 
