@@ -1,6 +1,7 @@
 ​<div align="center">
 ​🌸 تطبيق ماهنا (Mahana App) 🌸
-​<img src="1000149013.png" alt="شعار تطبيق ماهنا" width="180" style="border-radius: 50%;">
+<img width="512" height="512" alt="1000149011" src="https://github.com/user-attachments/assets/5a0313f5-9ef5-4019-8939-175ebd77b226" />
+
 ​تطبيق وموقع ويب متطور، خفيف الوزن، ومخصص لمتابعة وتوثيق مراحل الحمل بشكل تفاعلي وذكي.
 ​🌐 استعرض الموقع مباشرة | 📱 تحميل تطبيق الـ APK
 ​</div>
@@ -20,6 +21,4 @@
 ​💡 طريقة الاستخدام
 ​يمكنك استخدام التطبيق مباشرة عبر متصفح الويب دون الحاجة لتثبيت برامج معقدة، أو تحميل نسختك بصيغة APK وثبيتها على هاتفك الأندرويد بكل سهولة!
 ​صُنع بكل حُب لدعم صحة الأم والطفل .. 
-<img width="512" height="512" alt="1000149013" src="https://github.com/user-attachments/assets/fe762cad-8b1d-487c-83c2-84972ecb769f" />
-<img width="512" height="512" alt="1000149013" src="https://github.com/user-attachments/assets/2320a972-cd02-4cce-aea5-1bca714d1a28" />
 وبالخصوص لزوجتي العزيزة اتمنى لها في كل الأوقات كل سعادة وخير 💖
