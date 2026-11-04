@@ -31,6 +31,7 @@
 <div id="sh"></div>
 <script>
 const $=s=>document.querySelector(s);
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbyD3yICQHDMTrrvCQVMnM8EaP-ESfR87J1yMLIx_h27kg6r7kUUrdBwwpCKunIxIpLC/exec";
 const ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'],pn=i=>i<10?'الحمل '+ORD[i]:'الحمل رقم '+(i+1);
 function mkS(r){const o={ps:r.ps&&r.ps.length?r.ps:[{lmp:'',visits:r.visits||[]}],cur:r.cur||0};o.ps.forEach(p=>{p.visits=p.visits||[]});if(o.cur>=o.ps.length)o.cur=0;
 Object.defineProperty(o,'lmp',{get:()=>o.ps[o.cur].lmp,set:v=>{o.ps[o.cur].lmp=v}});Object.defineProperty(o,'visits',{get:()=>o.ps[o.cur].visits,set:v=>{o.ps[o.cur].visits=v}});return o}
@@ -95,17 +96,71 @@ o.innerHTML=`<div class='row sp' style='padding:10px;border-bottom:1px solid var
 async function att(ids){let h='';for(const id of ids){const m=await mget(id);if(!m)continue;const t=m.type||'',n=esc(m.name||'ملف');h+=t.startsWith('image')?`<img src='${URL.createObjectURL(m.blob)}' data-i='${id}' onclick='fileOpen(this.dataset.i)' style='width:130px;height:130px;object-fit:cover;border:1px solid #ddd;margin:3px;border-radius:6px;cursor:pointer'>`:`<a data-i='${id}' onclick='fileOpen(this.dataset.i)' style='display:inline-block;border:1px solid #c9a0b0;background:#fbeef3;color:#7a1f3d;border-radius:6px;padding:6px 10px;margin:3px;font-size:12px;cursor:pointer'>📄 ${n}</a>`}return h?`<div style='margin-top:6px'><b>المرفقات:</b><br>${h}</div>`:''}
 function sV(){if(!_V.date){alert('اختاري تاريخ الزيارة');return}const w=wkOf(_V.date);_V.week=w!==''&&w>=0?w:'';const i=S.visits.findIndex(x=>x.id===_V.id);i<0?S.visits.push(_V):S.visits[i]=_V;save();closeSh();draw()}
 
-function dayChk(){const n=ymd(today());if(n!==_day){_day=n;if(!document.querySelector('.sheet')&&!document.getElementById('pv'))draw()}}
+let CH=[],busy=0;
+const RULES='أنتِ «مساعدة ماهانة»، مساعدة ذكية ناطقة بالعربية متخصصة في شؤون الحمل. تجيبين الحامل بناءً على بياناتها الفعلية المزودة أدناه (الزيارات، الأطباء، الأدوية، التحاليل والسونار). أجيبي بدقة وعناية وبصيغة المؤنث.';
+function ctxTxt(){const p=pregInfo(),w=Math.min(Math.max(p.w,1),40),V=S.visits;
+let t=`بيانات الحامل: أسبوع الحمل ${p.w}، عدد الزيارات: ${V.length}\n`;
+V.forEach((v,k)=>{t+=`زيارة ${k+1}: التاريخ ${v.date}، الطبيب: ${v.doctor||'—'}، ملاحظات: ${v.notes||'—'}\n`});return t}
+
+// الاتصال بـ Groq عبر الوسيط المجاني الخاص بك على Google Apps Script
+async function ask(q){
+    const inp=$('#cq');
+    q=(q||(inp?inp.value:'')).trim();
+    if(!q||busy)return;
+    if(inp)inp.value='';
+    busy=1;
+    CH.push({role:'user',content:q});
+    const box=$('#ch');
+    box.innerHTML=chHTML()+`<div id='cb' class='mu'>جاري استشارة المساعدة الذكية عبر الوسيط…</div>`;
+    box.scrollTop=box.scrollHeight;
+
+    try {
+        const response = await fetch(PROXY_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {role: "system", content: RULES + "\n\n" + ctxTxt()},
+                    ...CH.slice(-6).map(m => ({role: m.role, content: m.content}))
+                ],
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        if(data.choices && data.choices[0] && data.choices[0].message) {
+            const replyText = data.choices[0].message.content;
+            CH.push({role: 'assistant', content: replyText});
+            box.innerHTML = chHTML();
+        } else {
+            throw new Error(data.error?.message || 'استجابة غير صالحة من الخادم');
+        }
+    } catch(e) {
+        CH.pop();
+        const b=$('#cb');
+        if(b){
+            b.className='mu';
+            b.textContent='تعذّر الاتصال بالمساعد الذكي، تأكد من الاتصال أو إعدادات الوسيط.';
+        }
+    }
+    busy=0;
+}
+
+function chHTML(){return CH.map(m=>`<div style='margin:6px 0'><div style='display:inline-block;max-width:94%;padding:8px 12px;border-radius:14px;background:${m.role==='user'?'var(--mar)':'var(--bg)'};border:1px solid var(--ln);white-space:pre-wrap;line-height:1.8'>${esc(m.content)}</div></div>`).join('')}
+
+const aic=()=>`<div class='card'><h2>🤖 مساعدة الحمل الذكية (Groq AI)</h2><div class='mu'>اسأليها عن حملك، أعراضك، أطبائك، وزياراتك؛ مرتبطة مباشرة بسجلك عبر الوسيط الآمن.</div><div id='ch' style='max-height:340px;overflow:auto;margin:6px 0'>${chHTML()}</div><div>${['ما أعراضي الطبيعية هذا الأسبوع؟','لخّصي لي زياراتي وسوناراتي','ماذا أتوقع في هذا الشهر؟'].map(x=>`<span class='chip' onclick='ask(this.textContent)'>${x}</span>`).join('')}</div><div class='row' style='margin-top:8px'><input id='cq' placeholder='اكتبي سؤالك...' style='flex:1' onkeydown="if(event.key==='Enter')ask()"><button class='btn' onclick='ask()'>إرسال</button></div></div>`;
+function dayChk(){const n=ymd(today());if(n!==_day){_day=n;if(!document.querySelector('.sheet')&&!document.getElementById('pv')&&!busy)draw()}}
 let _day=ymd(today());setInterval(dayChk,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dayChk()});
 function sett(){const p=pregInfo();return `<h1>⚙️ الإعدادات</h1><div class='card'><h2>وضع التتبع</h2><div class='pgs'>${S.ps.map((x,i)=>`<button class='pgb ${i===S.cur?'on':''}' onclick='setPreg(${i})'>🤰 ${pn(i)}</button>`).join('')}</div><button class='btn g' style='width:100%;padding:13px;margin-top:8px' onclick='addPreg()'>+ إضافة حمل جديد</button></div><div class='card'><h2>آخر يوم لآخر دورة · ${pn(S.cur)}</h2><input type='date' value='${S.lmp}' onchange='S.lmp=this.value;save();draw()'><div class='mu' style='margin-top:6px'>الولادة المتوقعة: ${D(p.due)} · الأسبوع ${Math.max(0,p.w)} و${Math.max(0,p.d)} أيام</div></div><div class='card'><h2>💾 النسخة الاحتياطية</h2><div class='row'><button class='btn' style='flex:1' onclick='bkSave()'>تنزيل نسخة</button><button class='btn g' style='flex:1' onclick='bkPick()'>استعادة نسخة</button></div><input id='rf' type='file' accept='.json,application/json' style='display:none' onchange='bkLoad(this.files[0])'></div>`}
 
 function home(){
     const p=pregInfo();
     if(p.unset) {
-        return `<h1>🤰 متابعة الحمل · ${pn(S.cur)}</h1><div class='card' style='text-align:center;padding:24px 14px;'><h2>مرحباً بكِ في ماهانة</h2><p class='mu' style='margin-bottom:16px;'>يرجى تحديد تاريخ أول يوم من آخر دورة شهرية.</p><input type='date' style='font-size:16px;padding:12px;margin-bottom:14px;' onchange='S.lmp=this.value;save();draw();'></div>`;
+        return `<h1>🤰 متابعة الحمل · ${pn(S.cur)}</h1><div class='card' style='text-align:center;padding:24px 14px;'><h2>مرحباً بكِ في ماهانة</h2><p class='mu' style='margin-bottom:16px;'>يرجى تحديد تاريخ أول يوم من آخر دورة شهرية.</p><input type='date' style='font-size:16px;padding:12px;margin-bottom:14px;' onchange='S.lmp=this.value;save();draw();'></div>${aic()}`;
     }
     const w=Math.min(Math.max(p.w,1),40),r=wk4(w),pr=Math.min(100,Math.max(0,p.days/280*100)),R=44,C=2*Math.PI*R,L=Math.max(0,p.left),m=Math.min(9,Math.floor(Math.max(0,p.days)/30.44)+1),sz=w<3?'':`الطول ≈ ${r[2]} سم`;
-    return `<h1>🤰 متابعة الحمل${S.ps.length>1?' · '+pn(S.cur):''}</h1><div class='card row sp'><svg width='110' height='110' viewBox='0 0 110 110'><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ln)' stroke-width='9'/><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ac)' stroke-width='9' stroke-linecap='round' stroke-dasharray='${C*pr/100} ${C}' transform='rotate(-90 55 55)'/><text x='55' y='60' text-anchor='middle' fill='var(--tx)' font-size='18' font-weight='700'>${Math.round(pr)}%</text></svg><div style='flex:1'><div style='font-size:19px;font-weight:700'>الأسبوع ${p.w} و${p.d} أيام</div><div class='mu'>المتبقي: ${L} يوماً<br>الولادة: ${D(p.due)}</div></div></div><div class='card' style='text-align:center'><h2>حجم الجنين</h2><div style='font-size:80px'>${EM[w-1]}</div><div><b>${r[1]}</b></div><div class='mu'>${sz}</div></div><button class='fab np' onclick='editV()'>+</button>`
+    return `<h1>🤰 متابعة الحمل${S.ps.length>1?' · '+pn(S.cur):''}</h1><div class='card row sp'><svg width='110' height='110' viewBox='0 0 110 110'><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ln)' stroke-width='9'/><circle cx='55' cy='55' r='${R}' fill='none' stroke='var(--ac)' stroke-width='9' stroke-linecap='round' stroke-dasharray='${C*pr/100} ${C}' transform='rotate(-90 55 55)'/><text x='55' y='60' text-anchor='middle' fill='var(--tx)' font-size='18' font-weight='700'>${Math.round(pr)}%</text></svg><div style='flex:1'><div style='font-size:19px;font-weight:700'>الأسبوع ${p.w} و${p.d} أيام</div><div class='mu'>المتبقي: ${L} يوماً<br>الولادة: ${D(p.due)}</div></div></div><div class='card' style='text-align:center'><h2>حجم الجنين</h2><div style='font-size:80px'>${EM[w-1]}</div><div><b>${r[1]}</b></div><div class='mu'>${sz}</div></div>${aic()}<button class='fab np' onclick='editV()'>+</button>`
 }
 
 const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]||'');f.readAsDataURL(b)});
@@ -128,7 +183,7 @@ async function bkLoad(f){
         const d = JSON.parse(text);
         if(d.app!=='mahana'||!d.S)throw new Error('ملف غير صالح');
         if(!confirm('سيتم استبدال البيانات الحالية بالنسخة. متابعة؟'))return;
-        S = mkS(d.S); save();
+        S = mkS(d.S); CH=[]; save();
         alert('تمت استعادة النسخة الاحتياطية بنجاح!'); draw();
     } catch(e) { alert('ملف النسخة غير صالح أو تالف.'); }
 }
@@ -149,10 +204,10 @@ p.visits.forEach(v=>{if((v.doctor||'').trim())ds.add(v.doctor.trim());me+=(v.med
 const dt=p.visits.map(v=>v.date).sort(),ln=(a,b)=>`<div class='row sp' style='padding:6px 0;border-bottom:1px solid var(--ln)'><span class='mu'>${a}</span><b>${b}</b></div>`;
 $('#sh').innerHTML=`<div class='sheet' onclick='if(event.target===this)closeSh()'><div><h2>🤰 ${pn(i)} (${i+1})</h2><div class='mu'>آخر يوم لآخر دورة</div><input type='date' value='${_pl}' oninput='_pl=this.value' style='margin-bottom:8px'>${ln('عمر الحمل الحالي',Math.max(0,pi.w)+' أسبوعاً و'+Math.max(0,pi.d)+' أيام')}${ln('الولادة المتوقعة',D(pi.due))}${ln('عدد الزيارات',p.visits.length)}${ln('عدد الأطباء',ds.size)}${ln('الأدوية والعلاجات',me)}${ln('التحاليل الطبية',te)}${ln('السونار',so)}<div class='row' style='margin-top:14px'><button class='btn' style='flex:1;padding:13px' onclick='pgSave()'>حفظ</button><button class='btn' style='flex:1;padding:13px;background:#c0394f' onclick='pgDel()'>حذف</button></div></div></div>`;}
 function pgSheet(i){_pi=i;_pc=0;_pl=S.ps[i].lmp;pgRender()}
-function pgSave(){S.ps[_pi].lmp=_pl;save();closeSh();draw()}
-function pgDel(){if(!confirm('حذف هذا الحمل بكل زياراته؟'))return;if(S.ps.length===1)S.ps[0]={lmp:'',visits:[]};else{S.ps.splice(_pi,1);S.cur=_pi<S.cur?S.cur-1:Math.min(S.cur,S.ps.length-1)} save();closeSh();draw()}
-function setPreg(i){S.cur=i;save();draw();pgSheet(i)}
-function addPreg(){S.ps.push({lmp:'',visits:[]});S.cur=S.ps.length-1;save();draw();pgSheet(S.cur)}
+function pgSave(){S.ps[_pi].lmp=_pl;CH=[];save();closeSh();draw()}
+function pgDel(){if(!confirm('حذف هذا الحمل بكل زياراته؟'))return;if(S.ps.length===1)S.ps[0]={lmp:'',visits:[]};else{S.ps.splice(_pi,1);S.cur=_pi<S.cur?S.cur-1:Math.min(S.cur,S.ps.length-1)} CH=[];save();closeSh();draw()}
+function setPreg(i){S.cur=i;CH=[];save();draw();pgSheet(i)}
+function addPreg(){S.ps.push({lmp:'',visits:[]});S.cur=S.ps.length-1;CH=[];save();draw();pgSheet(S.cur)}
 draw();
 </script>
 </body>
